@@ -14,15 +14,17 @@
           pkgs = import nixpkgs {
             inherit system; overlays = [
             self.overlay
-            (import ./nix/overlay.nix)
+            self.overlay-extend
           ];
           };
         in
         with pkgs;
         rec {
-          packages = flake-utils.lib.flattenTree {
-            vast = pkgs.vast;
-          };
+          packages = flake-utils.lib.flattenTree
+            {
+              vast = pkgs.vast;
+              pyvast = pkgs.pyvast;
+            };
 
           defaultPackage = packages.vast;
 
@@ -34,15 +36,16 @@
             buildInputs = [ vast ];
             shellHook = ''
               gitVersion=$(git describe --tags --long --dirty)
-              sed -i 's|versionOverride = "2021.03.25-0-gb8ed41cd8-dirty";|versionOverride = "'"$gitVersion"'";|' flake.nix
+              sed -i 's|versionOverride = "2021.03.25-rc2-46-gf427936fd-dirty";|versionOverride = "'"$gitVersion-dirty"'";|' flake.nix
             '';
           };
         }
       ) // {
+      overlay-extend = import ./nix/overlay.nix;
       overlay = final: prev:
         let
           stdenv = if prev.stdenv.isDarwin then final.llvmPackages_10.stdenv else final.stdenv;
-          versionOverride = "2021.03.25-0-gb8ed41cd8-dirty";
+          versionOverride = "2021.03.25-rc2-46-gf427936fd-dirty";
           # version = with prev; builtins.readFile
           #   (runCommandLocal "gitDescribe.out"
           #     {
@@ -53,9 +56,27 @@
           #   '');
         in
         {
+          pyvast = with final;
+            (python3Packages.buildPythonPackage {
+              pname = "pyvast";
+              version = versionOverride;
+              src = ./pyvast;
+              doCheck = false;
+              propagatedBuildInputs = with python3Packages; [
+                aiounittest
+              ];
+            });
+
           vast = final.callPackage ./nix/vast {
             inherit versionOverride stdenv;
           };
+
+          cmake-format = prev.cmake-format.overrideAttrs
+            (old: {
+              buildInputs = (old.buildInputs or [ ]) ++ [
+                prev.python3Packages.six
+              ];
+            });
         };
 
       nixosModules.vast = { lib, pkgs, config, ... }:
