@@ -1,5 +1,3 @@
-{ pkgs ? import <nixpkgs> {} }:
-let
-  nix-gitDescribe = pkgs.callPackage ./nix/gitDescribe.nix { };
-in
-pkgs.callPackage nix/vast.nix { inherit nix-gitDescribe; }
+(import (fetchTarball https://github.com/edolstra/flake-compat/archive/master.tar.gz) {
+  src = ./.;
+}).defaultNix
