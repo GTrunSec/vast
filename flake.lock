@@ -1,22 +1,5 @@
 {
   "nodes": {
-    "broker": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1583784312,
-        "narHash": "sha256-a5+21Q/SkDHS9cEhmcSmAxQgf3YcVgdj3EokwuVtqvA=",
-        "owner": "zeek",
-        "repo": "broker",
-        "rev": "e65cca620b1d2d26af6c5a9ee9513321fc3ed2a0",
-        "type": "github"
-      },
-      "original": {
-        "owner": "zeek",
-        "repo": "broker",
-        "rev": "e65cca620b1d2d26af6c5a9ee9513321fc3ed2a0",
-        "type": "github"
-      }
-    },
     "caf": {
       "flake": false,
       "locked": {
@@ -34,13 +17,44 @@
         "type": "github"
       }
     },
+    "flake-compat": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1606424373,
+        "narHash": "sha256-oq8d4//CJOrVj+EcOaSXvMebvuTkmBJuT5tzlfewUnQ=",
+        "owner": "edolstra",
+        "repo": "flake-compat",
+        "rev": "99f1c2157fba4bfe6211a321fd0ee43199025dbf",
+        "type": "github"
+      },
+      "original": {
+        "owner": "edolstra",
+        "repo": "flake-compat",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "locked": {
-        "lastModified": 1610051610,
-        "narHash": "sha256-U9rPz/usA1/Aohhk7Cmc2gBrEEKRzcW4nwPWMPwja4Y=",
+        "lastModified": 1614513358,
+        "narHash": "sha256-LakhOx3S1dRjnh0b5Dg3mbZyH0ToC9I8Y2wKSkBaTzU=",
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "3982c9903e93927c2164caa727cd3f6a0e6d14cc",
+        "rev": "5466c5bbece17adaab2d82fae80b46e807611bf3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "flake-utils_2": {
+      "locked": {
+        "lastModified": 1614513358,
+        "narHash": "sha256-LakhOx3S1dRjnh0b5Dg3mbZyH0ToC9I8Y2wKSkBaTzU=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "5466c5bbece17adaab2d82fae80b46e807611bf3",
         "type": "github"
       },
       "original": {
@@ -64,12 +78,51 @@
         "type": "indirect"
       }
     },
+    "nixpkgs-hardenedlinux": {
+      "inputs": {
+        "flake-compat": "flake-compat",
+        "flake-utils": "flake-utils_2",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1616366723,
+        "narHash": "sha256-GJfWbPBTBbugmcls35sdFQDXdjh1w9rur18I6nrCTZQ=",
+        "owner": "hardenedlinux",
+        "repo": "nixpkgs-hardenedlinux",
+        "rev": "434834e00907d7caf52ff1d26eb87f7ab83e6dfc",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hardenedlinux",
+        "repo": "nixpkgs-hardenedlinux",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
-        "broker": "broker",
         "caf": "caf",
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "nixpkgs-hardenedlinux": "nixpkgs-hardenedlinux",
+        "zeek-vast-src": "zeek-vast-src"
+      }
+    },
+    "zeek-vast-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1617477524,
+        "narHash": "sha256-AdRDAmoUCTfCsD9l+nsLLdKqMzc6inurRGOm7w8Uz2g=",
+        "owner": "tenzir",
+        "repo": "zeek-vast",
+        "rev": "8945b6389a2e3ae20d92a0b08a53b8bb73d459c2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tenzir",
+        "repo": "zeek-vast",
+        "type": "github"
       }
     }
   },

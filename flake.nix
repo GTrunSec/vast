@@ -1,12 +1,13 @@
 {
   inputs = {
-    broker = { url = "github:zeek/broker/e65cca620b1d2d26af6c5a9ee9513321fc3ed2a0"; flake = false; };
+    zeek-vast-src = { url = "github:tenzir/zeek-vast"; flake = false; };
     nixpkgs.url = "nixpkgs/449b698a0b554996ac099b4e3534514528019269";
     caf = { url = "github:actor-framework/actor-framework/347917fee3420d5fa02220af861869d1728b7fc0"; flake = false; };
     flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs-hardenedlinux = { url = "github:hardenedlinux/nixpkgs-hardenedlinux"; inputs.nixpkgs.follows = "nixpkgs"; };
   };
 
-  outputs = inputs@{ self, nixpkgs, broker, caf, flake-utils }:
+  outputs = inputs@{ self, nixpkgs, zeek-vast-src, caf, flake-utils, nixpkgs-hardenedlinux }:
     flake-utils.lib.eachDefaultSystem
       (
         system:
@@ -24,6 +25,7 @@
             {
               vast = pkgs.vast;
               pyvast = pkgs.pyvast;
+              zeek-vast = pkgs.zeek-vast;
             };
 
           defaultPackage = packages.vast;
@@ -56,6 +58,18 @@
           #   '');
         in
         {
+          broker = prev.callPackage "${nixpkgs-hardenedlinux}/pkgs/broker" { };
+
+          zeek-vast = final.vast.overrideAttrs (old: rec {
+            preConfigure = (old.preConfigure or "") + ''
+              ln -s ${zeek-vast-src}/zeek-to-vast tools/.
+              echo "add_subdirectory(zeek-to-vast)" >> tools/CMakeLists.txt
+            '';
+            cmakeFlags = (old.cmakeFlags or [ ]) ++ [
+              "-DBROKER_ROOT_DIR=${final.broker}"
+            ];
+          });
+
           pyvast = with final;
             (python3Packages.buildPythonPackage {
               pname = "pyvast";
