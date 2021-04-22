@@ -123,7 +123,7 @@
 
                 package = mkOption {
                   type = types.package;
-                  default = self.outputs.defaultPackage.x86_64-linux;
+                  default = self.outputs.packages."${pkgs.system}".vast;
                   description = "The vast package.";
                 };
 
