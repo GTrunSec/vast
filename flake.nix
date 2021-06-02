@@ -4,7 +4,7 @@
     nixpkgs.url = "nixpkgs/449b698a0b554996ac099b4e3534514528019269";
     caf = { url = "github:actor-framework/actor-framework/347917fee3420d5fa02220af861869d1728b7fc0"; flake = false; };
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs-hardenedlinux = { url = "github:hardenedlinux/nixpkgs-hardenedlinux"; inputs.nixpkgs.follows = "nixpkgs"; };
+    nixpkgs-hardenedlinux = { url = "github:hardenedlinux/nixpkgs-hardenedlinux"; };
   };
 
   outputs = inputs@{ self, nixpkgs, zeek-vast-src, caf, flake-utils, nixpkgs-hardenedlinux }:
@@ -16,7 +16,9 @@
             inherit system; overlays = [
             self.overlay
             self.overlay-extend
+            nixpkgs-hardenedlinux.overlay
           ];
+            config = { allowBroken = true; };
           };
         in
         with pkgs;
@@ -35,7 +37,7 @@
           };
 
           devShell = with pkgs; mkShell {
-            buildInputs = [ vast ];
+            buildInputs = [ broker ];
             shellHook = ''
               gitVersion=$(git describe --tags --long --dirty)
               sed -i 's|versionOverride = "2021.03.25-rc2-46-gf427936fd-dirty";|versionOverride = "'"$gitVersion-dirty"'";|' flake.nix
@@ -58,8 +60,6 @@
           #   '');
         in
         {
-          broker = prev.callPackage "${nixpkgs-hardenedlinux}/pkgs/broker" { };
-
           zeek-vast = final.vast.overrideAttrs (old: rec {
             preConfigure = (old.preConfigure or "") + ''
               ln -s ${zeek-vast-src}/zeek-to-vast tools/.
