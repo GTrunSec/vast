@@ -7,7 +7,8 @@
     nixpkgs-hardenedlinux = { url = "github:hardenedlinux/nixpkgs-hardenedlinux"; };
   };
 
-  outputs = inputs@{ self, nixpkgs, zeek-vast-src, caf, flake-utils, nixpkgs-hardenedlinux }:
+  outputs = inputs: with builtins;
+    with inputs;
     flake-utils.lib.eachDefaultSystem
       (
         system:
@@ -37,10 +38,10 @@
           };
 
           devShell = with pkgs; mkShell {
-            buildInputs = [ broker ];
+            buildInputs = [ btest ];
             shellHook = ''
               gitVersion=$(git describe --tags --long --dirty)
-              sed -i 's|versionOverride = "2021.03.25-rc2-46-gf427936fd-dirty";|versionOverride = "'"$gitVersion-dirty"'";|' flake.nix
+              sed -i 's|versionOverride = "2021.05.27-5-g928011f95-dirty-dirty";|versionOverride = "'"$gitVersion-dirty"'";|' flake.nix
             '';
           };
         }
@@ -49,7 +50,7 @@
       overlay = final: prev:
         let
           stdenv = if prev.stdenv.isDarwin then final.llvmPackages_10.stdenv else final.stdenv;
-          versionOverride = "2021.03.25-rc2-46-gf427936fd-dirty";
+          versionOverride = "2021.05.27-5-g928011f95-dirty-dirty";
           # version = with prev; builtins.readFile
           #   (runCommandLocal "gitDescribe.out"
           #     {
