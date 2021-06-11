@@ -96,12 +96,14 @@
         with lib;
         let
           cfg = config.services.vast;
-          configFile = pkgs.writeText "vast.conf" (
-            builtins.toJSON {
-              vast = {
-                endpoint = "${toString cfg.endpoint}";
-              } // cfg.settings;
-            });
+          configFile = pkgs.writeText "vast.yaml"
+            (
+              builtins.toJSON {
+                vast = {
+                  endpoint = cfg.endpoint;
+                  db-directory = cfg.dataDir;
+                } // cfg.settings;
+              });
         in
         {
           options =
@@ -124,6 +126,12 @@
                   type = types.package;
                   default = self.outputs.packages."${pkgs.system}".vast;
                   description = "The vast package.";
+                };
+
+                dataDir = mkOption {
+                  type = types.str;
+                  default = "/var/lib/vast";
+                  description = "The file system path used for persistent state.";
                 };
 
                 endpoint = mkOption {
@@ -166,10 +174,10 @@
               serviceConfig = {
                 Restart = "always";
                 RestartSec = "10";
-                ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID && ${pkgs.coreutils}/bin/rm vast.db/pid.lock";
+                ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID && ${pkgs.coreutils}/bin/rm ${cfg.dataDir}/vast.db/pid.lock";
                 User = "vast";
-                WorkingDirectory = "/var/lib/vast";
-                ReadWritePaths = "/var/lib/vast";
+                WorkingDirectory = cfg.dataDir;
+                ReadWritePaths = cfg.dataDir;
                 RuntimeDirectory = "vast";
                 CacheDirectory = "vast";
                 StateDirectory = "vast";
