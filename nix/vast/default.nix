@@ -1,8 +1,7 @@
 { stdenv
 , lib
 , vast-source
-, nix-gitignore
-, nix-gitDescribe
+, vast-gitDescribe
 , cmake
 , cmake-format
 , pkgconfig
@@ -23,8 +22,8 @@
 , tcpdump
 , utillinux
 , versionOverride ? null
-, withPlugins ? []
-, extraCmakeFlags ? []
+, withPlugins ? [ ]
+, extraCmakeFlags ? [ ]
 , disableTests ? true
 , buildType ? "Release"
 }:
@@ -32,31 +31,36 @@ let
   inherit (stdenv.hostPlatform) isStatic;
   isCross = stdenv.buildPlatform != stdenv.hostPlatform;
 
-  py3 = (let
-    python = let
-      packageOverrides = final: prev: {
-        # See https://github.com/NixOS/nixpkgs/pull/96037
-        coloredlogs = prev.coloredlogs.overridePythonAttrs (old: rec {
-          doCheck = !stdenv.isDarwin;
-          checkInputs = with prev; [ pytest mock utillinux verboselogs capturer ];
-          pythonImportsCheck = [ "coloredlogs" ];
+  py3 = (
+    let
+      python =
+        let
+          packageOverrides = final: prev: {
+            # See https://github.com/NixOS/nixpkgs/pull/96037
+            coloredlogs = prev.coloredlogs.overridePythonAttrs (old: rec {
+              doCheck = !stdenv.isDarwin;
+              checkInputs = with prev; [ pytest mock utillinux verboselogs capturer ];
+              pythonImportsCheck = [ "coloredlogs" ];
 
-          propagatedBuildInputs = [ prev.humanfriendly ];
-        });
-      };
-    in python3.override {inherit packageOverrides; self = python;};
+              propagatedBuildInputs = [ prev.humanfriendly ];
+            });
+          };
+        in
+        python3.override { inherit packageOverrides; self = python; };
 
-  in python.withPackages(ps: with ps; [
-    coloredlogs
-    jsondiff
-    pyarrow
-    pyyaml
-    schema
-  ]));
+    in
+    python.withPackages (ps: with ps; [
+      coloredlogs
+      jsondiff
+      pyarrow
+      pyyaml
+      schema
+    ])
+  );
 
   src = vast-source;
 
-  version = if (versionOverride != null) then versionOverride else stdenv.lib.fileContents (nix-gitDescribe src);
+  version = if (versionOverride != null) then versionOverride else stdenv.lib.fileContents (vast-gitDescribe src);
 
 in
 
@@ -72,7 +76,7 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ cmake cmake-format ];
   propagatedNativeBuildInputs = [ pkgconfig pandoc ];
-  buildInputs = [ 
+  buildInputs = [
     libpcap
     jemalloc
     libyamlcpp
@@ -99,10 +103,10 @@ stdenv.mkDerivation rec {
     "-DVAST_ENABLE_STATIC_EXECUTABLE:BOOL=ON"
     "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION:BOOL=ON"
   ] ++ lib.optional disableTests "-DVAST_ENABLE_UNIT_TESTS=OFF"
-    # Plugin Section
-    ++ lib.optional (withPlugins != [])
-       "-DVAST_PLUGINS=${lib.concatStringsSep ";" withPlugins}"
-    ++ extraCmakeFlags;
+  # Plugin Section
+  ++ lib.optional (withPlugins != [ ])
+    "-DVAST_PLUGINS=${lib.concatStringsSep ";" withPlugins}"
+  ++ extraCmakeFlags;
 
   hardeningDisable = lib.optional isStatic "pic";
 
