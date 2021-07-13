@@ -74,15 +74,14 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [ cmake cmake-format ];
   propagatedNativeBuildInputs = [ pkgconfig pandoc ];
   buildInputs = [
-    libpcap
     jemalloc
     libyamlcpp
     simdjson
     spdlog
     robin-map
     libunwind
-    zeek-broker
-  ];
+  ] ++ (if (toString (lib.intersectLists [ "pcap" ] withPlugins)) == "pcap" then [ libpcap ] else [])
+   ++ (if (toString (lib.intersectLists [ "broker" ] withPlugins)) == "broker" then [ zeek-broker ] else []);
   propagatedBuildInputs = [ arrow-cpp caf flatbuffers ];
 
   cmakeFlags = [
@@ -101,10 +100,11 @@ stdenv.mkDerivation rec {
     "-DVAST_ENABLE_STATIC_EXECUTABLE:BOOL=ON"
     "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION:BOOL=ON"
   ] ++ lib.optional disableTests "-DVAST_ENABLE_UNIT_TESTS=OFF"
-    # Plugin Section
-    ++ lib.optional (withPlugins != [])
-       "-DVAST_PLUGINS=${lib.concatStringsSep ";" withPlugins}"
-    ++ extraCmakeFlags;
+  # Plugin Section
+  ++ lib.optional (withPlugins != []) [#Exp: ["broker" "pcap"]
+    "-DVAST_PLUGINS=${lib.concatImapStringsSep ";" (pos: x: "${src}/plugins/" + x ) withPlugins}"
+    ]
+  ++ extraCmakeFlags ;
 
   hardeningDisable = lib.optional isStatic "pic";
 
