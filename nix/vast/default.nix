@@ -101,9 +101,10 @@ stdenv.mkDerivation rec {
     "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION:BOOL=ON"
   ] ++ lib.optional disableTests "-DVAST_ENABLE_UNIT_TESTS=OFF"
   # Plugin Section
-  ++ lib.optional (withPlugins != []) [#Exp: ["broker" "pcap"]
+  ++ lib.optionals (withPlugins != []) [#Exp: ["broker" "pcap"]
     "-DVAST_PLUGINS=${lib.concatImapStringsSep ";" (pos: x: "${src}/plugins/" + x ) withPlugins}"
-    ]
+    "-DVAST_ENABLE_STATIC_PLUGINS=ON"
+  ]
   ++ extraCmakeFlags ;
 
   hardeningDisable = lib.optional isStatic "pic";
